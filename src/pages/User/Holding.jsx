@@ -1,27 +1,28 @@
-import React from 'react'
-import { useState } from 'react';
-import UserNavigation from '../../components/UserComponent/UserNavigation';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import UserNavigation from '../../components/UserComponent/UserNavigation';
+import { useSelector } from 'react-redux';
+
 
 function Holding() {
     const [holdings, setHoldings] = useState([]);
     const [selectedShare, setSelectedShare] = useState(null);
-    const userId = 1; // Example user ID, adjust as needed
+    const [msg, setMsg] = useState('');
+    const userId = useSelector((state) => state.user.id);; // Example userId (replace with actual logic)
 
     // Fetch Holdings Data
     useEffect(() => {
         const fetchHoldings = async () => {
             try {
-                const response = await await axios.get(
-                    `https://44ea-14-142-39-150.ngrok-free.app/holdings/`+ userId,
+                const response = await axios.get(
+                    `https://44ea-14-142-39-150.ngrok-free.app/holdings/` + userId,
                     {
-                      headers: {
-                        "ngrok-skip-browser-warning": "true",
-                      },
+                        headers: {
+                            "ngrok-skip-browser-warning": "true",
+                        },
                     }
-                  ); // Replace '123' with the userId
-                  console.log("Holding Data:", response.data);
+                );
+                console.log("Holding Data:", response.data);
                 setHoldings(response.data);
             } catch (error) {
                 console.error('Error fetching holdings:', error);
@@ -39,29 +40,57 @@ function Holding() {
     );
 
     // Open Modal with Selected Share Details
-    const openModal = async (share) => {
-        try {
-            const response = await axios.get(`https://your-ngrok-url.ngrok.io/holdings/details/${share.id}`);
-            setSelectedShare(response.data);
-        } catch (error) {
-            console.error('Error fetching share details:', error);
-            alert('Failed to fetch share details. Please try again.');
-        }
+    const openModal = (share) => {
+        setSelectedShare(share);
     };
 
     // Close Modal
     const closeModal = () => setSelectedShare(null);
 
-    // Remove Stock from Holdings
-    const removeStock = async (id) => {
+    // Sell Stock
+    const sellStock = async (id, price, quantity) => {
+        console.log(id, price, quantity);
         try {
-            await axios.get(`https://your-ngrok-url.ngrok.io/holdings/details/${id}`);
-            setHoldings(holdings.filter((stock) => stock.id !== id));
-            closeModal(); // Close modal after successful removal
-            alert('Holding removed successfully!');
+            const payload = {
+                userId: 1,
+                stockId: id,
+                quantity: quantity,
+                currentPrice: price,
+                totalAmount: quantity * price,
+            };
+
+            await axios
+                .post(
+                    `https://44ea-14-142-39-150.ngrok-free.app/holdings/sell`,
+                    payload,
+                    {
+                        headers: {
+                            "ngrok-skip-browser-warning": "true",
+                        },
+                    }
+                )
+                .then((res) => {
+                    console.log(res.data);
+                    if (res.data === "Not enough shares to sell") {
+                        setMsg("Not enough shares to sell");
+                    } else {
+                        setMsg("Stock Sold Successfully");
+                        setHoldings((prevHoldings) =>
+                            prevHoldings.map((stock) =>
+                                stock.id === id
+                                    ? { ...stock, quantity: stock.quantity - quantity }
+                                    : stock
+                            )
+                        );
+                    }
+                    closeModal();
+                })
+                .catch((err) => {
+                    console.log(err);
+                    setMsg("Failed to sell stock");
+                });
         } catch (error) {
-            console.error('Error removing holding:', error);
-            alert('Failed to remove holding. Please try again.');
+            console.error("Error selling stock:", error);
         }
     };
 
@@ -75,14 +104,14 @@ function Holding() {
                         <tr>
                             <th>Stock</th>
                             <th>Quantity</th>
-                            <th>Price ($)</th>
-                            <th>Total Value ($)</th>
+                            <th>Price (₹)</th>
+                            <th>Total Value (₹)</th>
                         </tr>
                     </thead>
                     <tbody>
                         {holdings.map((stock, index) => (
                             <tr key={index} onClick={() => openModal(stock)}>
-                                <td>{stock.name} </td>
+                                <td>{stock.name}</td>
                                 <td>{stock.quantity}</td>
                                 <td>{stock.price.toFixed(2)}</td>
                                 <td>{(stock.quantity * stock.price).toFixed(2)}</td>
@@ -90,7 +119,7 @@ function Holding() {
                         ))}
                         <tr>
                             <td colSpan="3"><strong>Total Investment:</strong></td>
-                            <td><strong>${totalInvestment.toFixed(2)}</strong></td>
+                            <td><strong>₹{totalInvestment.toFixed(2)}</strong></td>
                         </tr>
                     </tbody>
                 </table>
@@ -100,27 +129,42 @@ function Holding() {
             {selectedShare && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>{selectedShare.company}</h3>
-                        <p><strong>Available Shares:</strong> {selectedShare.available}</p>
-                        <p><strong>Price per Share:</strong> ${selectedShare.price.toFixed(2)}</p>
-                        <p>
-                            <strong>Status:</strong> 
-                            {selectedShare.flow === 'up' ? ' 📈 Upflow' : ' 📉 Downflow'}
-                        </p>
-                        <div className="modal-buttons">
-                            <button 
-                                className="remove-btn" 
-                                onClick={() => removeStock(selectedShare.id)}
-                            >
-                                Remove
-                            </button>
-                            <button className="confirm-btn" onClick={closeModal}>Close</button>
+                        <h3>{selectedShare.name}</h3>
+                        <p><strong>Available Shares:</strong> {selectedShare.quantity}</p>
+                        <p><strong>Price per Share:</strong> ₹{selectedShare.price.toFixed(2)}</p>
+                        <div className="form-group">
+                            <label htmlFor="quantity">Enter Quantity to Sell:</label>
+                            <input
+                                type="number"
+                                id="quantity"
+                                name="quantity"
+                                min="1"
+                                max={selectedShare.quantity}
+                                placeholder="Enter quantity"
+                            />
                         </div>
+                        <button
+                            className="sell-btn"
+                            onClick={() =>
+                                sellStock(
+                                    selectedShare.id,
+                                    selectedShare.price,
+                                    document.getElementById("quantity").value
+                                )
+                            }
+                        >
+                            Sell Now
+                        </button>
+                        <br />
+                        <button className="confirm-btn" onClick={closeModal}>
+                            Close
+                        </button>
                     </div>
                 </div>
             )}
+            <h1 className="success">{msg}</h1>
         </div>
     );
 }
 
-export default Holding
+export default Holding;

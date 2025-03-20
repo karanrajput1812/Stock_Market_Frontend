@@ -3,11 +3,12 @@ import { useState } from 'react';
 import UserNavigation from '../../components/UserComponent/UserNavigation';
 import { useEffect } from 'react';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 function Balance() {
-    const [balance, setBalance] = useState(0);
+    const [balance, setBalance] = useState(10000);
     const [amount, setAmount] = useState('');
     const [error, setError] = useState('');
-    const userId = '12345'; // Example userId (replace with actual logic)
+    const userId = useSelector((state) => state.user.id);; // Example userId (replace with actual logic)
 
     // Fetch balance on component load
     useEffect(() => {
@@ -16,7 +17,7 @@ function Balance() {
 
     const fetchBalance = async () => {
         try {
-            const response = await axios.get(`https://<your-ngrok-url>/balance/${userId}`);
+            const response = await axios.get(`https://44ea-14-142-39-150.ngrok-free.app/balance/₹{userId}`);
             setBalance(response.data.balance);
         } catch (err) {
             setError('Failed to fetch balance. Please try again.');
@@ -30,8 +31,8 @@ function Balance() {
         }
 
         const endpoint = type === 'deposit' 
-            ? 'https://<your-ngrok-url>/balance/deposit'
-            : 'https://<your-ngrok-url>/balance/withdraw';
+            ? 'https://44ea-14-142-39-150.ngrok-free.app/balance/deposit'
+            : 'https://44ea-14-142-39-150.ngrok-free.app/balance/withdraw';
 
         try {
             await axios.post(endpoint, {
@@ -41,7 +42,7 @@ function Balance() {
             setAmount('');
             fetchBalance(); // Refresh balance after transaction
         } catch (err) {
-            setError(`Failed to ${type} funds. Please try again.`);
+            setError(`Failed to ₹{type} funds. Please try again.`);
         }
     };
 
@@ -52,7 +53,7 @@ function Balance() {
                 <h2>Balance Details</h2>
                 <div className="balance-card">
                     <div className="balance-info">
-                        <p><strong>Current Balance:</strong> ${balance.toFixed(2)}</p>
+                        <p><strong>Current Balance:</strong> Rs.{balance.toFixed(2)}</p>
                     </div>
 
                     <div className="form-group">
@@ -71,7 +72,7 @@ function Balance() {
                                 Remove Balance
                             </button>
                         </div>
-                        {error && <p className="error">{error}</p>}
+                        {/* {error && <p className="error">{error}</p>} */}
                     </div>
                 </div>
             </div>

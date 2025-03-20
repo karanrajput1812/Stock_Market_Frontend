@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
 import axios from "axios";
+import { useSelector } from 'react-redux';
 
 function Watchlist() {
   const [watchlist, setWatchlist] = useState([]);
   const [allShares, setAllShares] = useState([]);
-  const userId = 1; // Example user ID, adjust as needed
+  const userId = useSelector((state) => state.user.id);; // Example userId (replace with actual logic)
+
 
   // Fetch watchlist from the API
   useEffect(() => {
     const fetchWatchlist = async () => {
       try {
         const response = await axios.get(
-          `https://44ea-14-142-39-150.ngrok-free.app/watchlist/${userId}`,
+          `https://44ea-14-142-39-150.ngrok-free.app/watchlist/₹{userId}`,
           {
             headers: {
               "ngrok-skip-browser-warning": "true",
@@ -104,7 +106,7 @@ function Watchlist() {
             <tr>
               <th>Stock ID</th>
               <th>Stock</th>
-              <th>Price ($)</th>
+              <th>Price (₹)</th>
             </tr>
           </thead>
           <tbody>
@@ -132,7 +134,7 @@ function Watchlist() {
               <strong>Available Shares:</strong> {selectedShare.quantity}
             </p>
             <p>
-              <strong>Price per Share:</strong> $
+              <strong>Price per Share:</strong> ₹
               {selectedShare.currentPrice.toFixed(2)}
             </p>
             <div className="modal-buttons">

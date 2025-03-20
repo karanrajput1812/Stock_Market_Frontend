@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
+import { useSelector } from 'react-redux';
 
 function Trading() {
   const [allShares, setAllShares] = useState([]);
@@ -10,6 +11,7 @@ function Trading() {
   const [searchQuery, setSearchQuery] = useState("");
   const [msg, setMsg] = useState("");
   const [selectedShare, setSelectedShare] = useState(null);
+  const userId = useSelector((state) => state.user.id);; // Example userId (replace with actual logic)
 
   function getShares() {
     axios

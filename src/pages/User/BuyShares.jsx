@@ -1,9 +1,11 @@
 import React from 'react'
 import UserNavigation from '../../components/UserComponent/UserNavigation';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+
 function BuyShares() {
     const [selectedShare, setSelectedShare] = useState(null);
-
+    const userId = useSelector((state) => state.user.id);; // Example userId (replace with actual logic)
     const shares = [
         { company: 'ABC Corp', available: 500, price: 120, flow: 'up' },
         { company: 'XYZ Ltd', available: 300, price: 80, flow: 'down' },
@@ -38,7 +40,7 @@ function BuyShares() {
                             <tr key={index} onClick={() => handleRowClick(share)}>
                                 <td>{share.company}</td>
                                 <td>{share.available}</td>
-                                <td>${share.price.toFixed(2)}</td>
+                                <td>₹{share.price.toFixed(2)}</td>
                                 <td 
                                     className={share.flow === 'up' ? 'upflow' : 'downflow'}
                                 >
@@ -55,7 +57,7 @@ function BuyShares() {
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <h3>{selectedShare.company}</h3>
                             <p><strong>Available Shares:</strong> {selectedShare.available}</p>
-                            <p><strong>Price per Share:</strong> ${selectedShare.price.toFixed(2)}</p>
+                            <p><strong>Price per Share:</strong> ₹{selectedShare.price.toFixed(2)}</p>
                             <p><strong>Status:</strong> {selectedShare.flow === 'up' ? '📈 Upflow' : '📉 Downflow'}</p>
                             <button className="submit-btn" onClick={closeModal}>Buy Now</button>
                             <button className="confirm-btn" onClick={closeModal}>Close</button>
