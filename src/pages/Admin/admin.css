@@ -1,0 +1,55 @@
+.add-form h3 {
+    color: #555;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-group small {
+    display: block;
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+}
+
+.form-group input, 
+.form-group select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3f51b5;
+}
+
+/* .submit-btn {
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #303f9f;
+} */
