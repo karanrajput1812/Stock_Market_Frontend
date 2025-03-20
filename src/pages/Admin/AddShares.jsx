@@ -25,7 +25,7 @@ function AddShares() {
     e.preventDefault();
     console.log(shareDetails);
     axios
-      .post(`https://c0a1-125-18-187-66.ngrok-free.app/api/shares/add`, shareDetails,
+      .post(`https://ea81-125-18-187-66.ngrok-free.app/api/shares/add`, shareDetails,
         {
                 headers: {
                         "ngrok-skip-browser-warning": "true"

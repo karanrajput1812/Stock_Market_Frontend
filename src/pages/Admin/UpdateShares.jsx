@@ -26,7 +26,7 @@ function UpdateShares() {
     e.preventDefault();
     console.log(shareDetails);
     axios
-      .put(`https://c0a1-125-18-187-66.ngrok-free.app/api/shares/update`, shareDetails,
+      .put(`https://ea81-125-18-187-66.ngrok-free.app/api/shares/update`, shareDetails,
         {
                 headers: {
                         "ngrok-skip-browser-warning": "true"

@@ -7,12 +7,21 @@ import axios from 'axios';
 function Holding() {
     const [holdings, setHoldings] = useState([]);
     const [selectedShare, setSelectedShare] = useState(null);
+    const userId = 1; // Example user ID, adjust as needed
 
     // Fetch Holdings Data
     useEffect(() => {
         const fetchHoldings = async () => {
             try {
-                const response = await axios.get(`https://your-ngrok-url.ngrok.io/holdings/123`); // Replace '123' with the userId
+                const response = await await axios.get(
+                    `https://44ea-14-142-39-150.ngrok-free.app/holdings/`+ userId,
+                    {
+                      headers: {
+                        "ngrok-skip-browser-warning": "true",
+                      },
+                    }
+                  ); // Replace '123' with the userId
+                  console.log("Holding Data:", response.data);
                 setHoldings(response.data);
             } catch (error) {
                 console.error('Error fetching holdings:', error);

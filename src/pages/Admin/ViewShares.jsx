@@ -10,7 +10,7 @@ function ViewShares() {
   const [allShares, setAllShares] = useState([]);
 
 function getShares() {
-    axios.get(`https://c0a1-125-18-187-66.ngrok-free.app/api/shares/all`,
+    axios.get(`https://ea81-125-18-187-66.ngrok-free.app/api/shares/all`,
             {
                     headers: {
                             "ngrok-skip-browser-warning": "true"

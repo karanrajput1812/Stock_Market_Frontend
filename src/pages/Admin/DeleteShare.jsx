@@ -22,7 +22,7 @@ function DeleteShares() {
     e.preventDefault();
     console.log(shareDetails);
     axios
-      .delete(`https://c0a1-125-18-187-66.ngrok-free.app/api/shares/delete/`+ shareDetails.id,
+      .delete(`https://ea81-125-18-187-66.ngrok-free.app/api/shares/delete/`+ shareDetails.id,
         {
                 headers: {
                         "ngrok-skip-browser-warning": "true"
