@@ -9,7 +9,7 @@ function UserProfile() {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const response = await axios.get('https://44ea-14-142-39-150.ngrok-free.app/api/user-profile/' + userID); // Replace with your actual API endpoint
+                const response = await axios.get('https://b90b-125-18-187-66.ngrok-free.app/api/user-profile/' + userID); // Replace with your actual API endpoint
                 const data = await response.json();
                 setUserProfile(data);
             } catch (error) {

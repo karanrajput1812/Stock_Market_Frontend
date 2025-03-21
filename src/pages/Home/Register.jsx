@@ -23,7 +23,7 @@ function Register() {
     console.log(user);
     axios
       .post(
-        `https://3545-2401-4900-4dd3-4525-a0f5-f8a9-298f-afe0.ngrok-free.app/register`,
+        `https://b90b-125-18-187-66.ngrok-free.app/api/users/register`,
         user,
         {
           headers: {

@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
 import axios from "axios";
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
+import { useSubscription } from "react-stomp-hooks";
 
 function Watchlist() {
   const [watchlist, setWatchlist] = useState([]);
   const [allShares, setAllShares] = useState([]);
-  const userId = useSelector((state) => state.user.id);; // Example userId (replace with actual logic)
-
+  // const userId = useSelector((state) => state.user.id);
+  const userId = 1;
 
   // Fetch watchlist from the API
   useEffect(() => {
     const fetchWatchlist = async () => {
       try {
         const response = await axios.get(
-          `https://44ea-14-142-39-150.ngrok-free.app/watchlist/₹{userId}`,
+          `https://b90b-125-18-187-66.ngrok-free.app/watchlist/`+userId,
           {
             headers: {
               "ngrok-skip-browser-warning": "true",
@@ -30,32 +31,16 @@ function Watchlist() {
     fetchWatchlist();
   }, []);
 
-  // Fetch all shares to get stock prices
-//   useEffect(() => {
-    const fetchShares = async () => {
-      try {
-        const response = await axios.get(
-          `https://ea81-125-18-187-66.ngrok-free.app/api/shares/all`,
-          {
-            headers: {
-              "ngrok-skip-browser-warning": "true",
-            },
-          }
-        );
-        setAllShares(response.data);
-      } catch (error) {
-        console.error("Error fetching shares:", error);
-      }
-    };
 
-    // fetchShares();
-//   });
-
-//   useEffect(() => {
-      const interval = setInterval(() => {
-        fetchShares();
-      }, 3000);
-// },[])
+  useSubscription("/topic/prices", (message) => {
+    try {
+      const shares = JSON.parse(message.body);
+      console.log(shares);
+      setAllShares(shares);
+    } catch (error) {
+      console.error("Error parsing message body:", error);
+    }
+  });
 
   // Merge watchlist and allShares data
   const mergedData = watchlist.map((stock) => {
@@ -79,14 +64,16 @@ function Watchlist() {
 
   const removeStock = async (id) => {
     try {
-        await axios.delete(
-            `https://44ea-14-142-39-150.ngrok-free.app/watchlist/remove/` + userId +'/3',
-            {
-              headers: {
-                "ngrok-skip-browser-warning": "true",
-              },
-            }
-          );
+      await axios.delete(
+        `https://b90b-125-18-187-66.ngrok-free.app/watchlist/remove/` +
+          userId +
+          "/3",
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
       setWatchlist(watchlist.filter((stock) => stock.id !== id));
       closeModal(); // Close modal after successful removal
       alert("Stock removed successfully!");

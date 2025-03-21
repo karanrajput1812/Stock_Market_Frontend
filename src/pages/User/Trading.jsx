@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
 import { useSelector } from 'react-redux';
-
+import { useSubscription } from "react-stomp-hooks";
 function Trading() {
   const [allShares, setAllShares] = useState([]);
   const [filteredShares, setFilteredShares] = useState([]);
@@ -15,19 +15,38 @@ function Trading() {
 
   function getShares() {
     axios
-      .get(`https://ea81-125-18-187-66.ngrok-free.app/api/shares/all`, {
+      .get(`https://9a24-14-142-39-150.ngrok-free.app/api/shares/all`, {
         headers: {
           "ngrok-skip-browser-warning": "true",
         },
       })
       .then((res) => {
         setAllShares(res.data);
-        setFilteredShares(res.data); // Initialize filteredShares with all shares
+        setFilteredShares(res.data);
       })
       .catch((err) => {
         console.error("Error fetching mini statement:", err);
       });
   }
+
+  useSubscription('/topic/prices', (message) => {
+    try {
+      const shares = JSON.parse(message.body);
+      console.log(shares);
+  
+      setAllShares(shares);
+      const filtered = shares.filter(
+        (share) =>
+          share.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          share.stockId.toString().includes(searchQuery)
+      );
+      setFilteredShares(filtered);
+    } catch (error) {
+      console.error("Error parsing message body:", error);
+    }
+  });
+  
+  
 
   const handleRowClick = (share) => {
     setSelectedShare(share);
@@ -37,8 +56,8 @@ function Trading() {
     setSelectedShare(null);
   };
 
-  const buyStock = async (id, price, quantity) => {
-    console.log(id, price, quantity);
+  const buyStock = async (id, price, quantity, stockName) => {
+    console.log(id, price, quantity,stockName);
     try {
       const payload = {
         stockId: id,
@@ -48,13 +67,14 @@ function Trading() {
         userId: 1,
         stockId: id,
         quantity: quantity,
+        stockName: stockName,
         currentPrice: price,
-        totalAmount: quantity * price,
+        // totalAmount: quantity * price,
       };
 
       await axios
         .post(
-          `https://44ea-14-142-39-150.ngrok-free.app/holdings/buy`,
+          `https://b90b-125-18-187-66.ngrok-free.app/holdings/buy`,
           payload2,
           {
             headers: {
@@ -64,14 +84,12 @@ function Trading() {
         )
         .then(async (res) => {
           console.log(res.data);
-          if (res.data === "Not enough Shares of Stock ID: 3") {
-            setMsg("Not enough Shares of Stock ID: 3");
+          if (res.data === "Not enough Shares of Stock ID: " + id) {
+            setMsg("Not enough Shares of Stock ID: " + id);
           } else {
-            setMsg("Stock Purchased Successfully");
-
             await axios
               .put(
-                `https://ea81-125-18-187-66.ngrok-free.app/api/shares/purchase`,
+                `https://9a24-14-142-39-150.ngrok-free.app/api/shares/purchase`,
                 payload,
                 {
                   headers: {
@@ -81,8 +99,8 @@ function Trading() {
               )
               .then((res) => {
                 console.log(res.data);
-                if (res.data === "Not enough Shares of Stock ID: 3") {
-                  setMsg("Not enough Shares of Stock ID: 3");
+                if (res.data === "Not enough Shares of Stock ID: " + id) {
+                  setMsg("Not enough Shares of Stock ID: " + id);
                 } else {
                   setMsg("Stock Purchased Successfully");
                 }
@@ -112,7 +130,7 @@ function Trading() {
     };
     await axios
       .post(
-        `https://44ea-14-142-39-150.ngrok-free.app/watchlist/add`,
+        `https://b90b-125-18-187-66.ngrok-free.app/watchlist/add`,
         payload,
         {
           headers: {
@@ -146,13 +164,13 @@ function Trading() {
     setFilteredShares(filtered);
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      getShares();
-    }, 2000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     getShares();
+  //   }, 2000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   return (
     <div className="container">
@@ -244,7 +262,8 @@ function Trading() {
                         buyStock(
                           selectedShare.stockId,
                           selectedShare.currentPrice,
-                          document.getElementById("quantity").value
+                          document.getElementById("quantity").value,
+                          selectedShare.name,
                         )
                       }
                     >

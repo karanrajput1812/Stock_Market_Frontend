@@ -17,7 +17,7 @@ function Balance() {
 
     const fetchBalance = async () => {
         try {
-            const response = await axios.get(`https://44ea-14-142-39-150.ngrok-free.app/balance/₹{userId}`);
+            const response = await axios.get(`https://b90b-125-18-187-66.ngrok-free.app/balance/₹{userId}`);
             setBalance(response.data.balance);
         } catch (err) {
             setError('Failed to fetch balance. Please try again.');
@@ -31,8 +31,8 @@ function Balance() {
         }
 
         const endpoint = type === 'deposit' 
-            ? 'https://44ea-14-142-39-150.ngrok-free.app/balance/deposit'
-            : 'https://44ea-14-142-39-150.ngrok-free.app/balance/withdraw';
+            ? 'https://b90b-125-18-187-66.ngrok-free.app/balance/deposit'
+            : 'https://b90b-125-18-187-66.ngrok-free.app/balance/withdraw';
 
         try {
             await axios.post(endpoint, {
