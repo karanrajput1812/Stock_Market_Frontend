@@ -3,6 +3,7 @@ import Navigation from "../../components/Navigation";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL3 } from "../../config/backend";
 // import { useDispatch, useSelector } from "react-redux";
 // import { login_User } from "../reduxContainer/AuthAction";
 
@@ -25,7 +26,7 @@ function ForgotPassword() {
     e.preventDefault();
     axios
       .get(
-        `https://b90b-125-18-187-66.ngrok-free.app/api/users/forgetpassword`,
+        `${BACKEND_URL3}/api/users/forgetpassword`,
         {
           params: {
             username: user.username,
@@ -37,7 +38,7 @@ function ForgotPassword() {
         }
       )
       .then((res) => {
-        console.log(res.data);
+        console.log(res);
           setPassword(res.data);
           // setMsg("Password reset successful");
       })
@@ -84,7 +85,7 @@ function ForgotPassword() {
                 <label for="password">{password}</label>
               </div>
             <button type="submit" class="submit-btn" onClick={loginUser}>
-              Reset Password
+              Get Password
             </button>
             <br />
             <br />

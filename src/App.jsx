@@ -10,14 +10,12 @@ import ChangePassword from "./pages/Home/ChangePassword";
 import AdminLogin from "./pages/Home/AdminLogin";
 import AboutUs from "./pages/Home/AboutUs";
 import Services from "./pages/Home/Services";
-import AdminDashBoard from "./pages/Admin/AdminDashBoard";
 import AddShares from "./pages/Admin/AddShares";
 import ViewShares from "./pages/Admin/ViewShares";
 import UpdateShares from "./pages/Admin/UpdateShares";
 import DeleteShare from "./pages/Admin/DeleteShare";
 import Holding from "./pages/User/Holding";
 import Balance from "./pages/User/Balance";
-import Portfolio from "./pages/User/Portfolio";
 import Watchlist from "./pages/User/Watchlist";
 import BuyShares from "./pages/User/BuyShares";
 import SelllShares from "./pages/User/SelllShares";
@@ -28,7 +26,7 @@ import UserProfile from "./pages/User/UserProfile";
 import { StompSessionProvider } from "react-stomp-hooks";
 function App() {
   return (
-    <StompSessionProvider url="ws://9a24-14-142-39-150.ngrok-free.app/ws">
+    <StompSessionProvider url="ws://27e0-125-18-187-66.ngrok-free.app/ws">
       <Provider store={store}>
       <Header />
       <Routes>

@@ -31,7 +31,7 @@ function UserNavigation() {
           <Link to="/user/holding">Holdings</Link>
         </li>
         <li>
-          <Link to="/user/my-account">My Account</Link>
+          {/* <Link to="/user/my-account">My Account</Link> */}
         </li>
         <li>
           <Link to="/">Logout</Link>

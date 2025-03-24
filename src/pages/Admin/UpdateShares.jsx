@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import './admin.css'
+import { BACKEND_URL1 } from "../../config/backend";
 
 function UpdateShares() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ function UpdateShares() {
     e.preventDefault();
     console.log(shareDetails);
     axios
-      .put(`https://9a24-14-142-39-150.ngrok-free.app/api/shares/update`, shareDetails,
+      .put(`${BACKEND_URL1}/api/shares/update`, shareDetails,
         {
                 headers: {
                         "ngrok-skip-browser-warning": "true"

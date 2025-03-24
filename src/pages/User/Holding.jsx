@@ -3,6 +3,8 @@ import axios from 'axios';
 import UserNavigation from '../../components/UserComponent/UserNavigation';
 import { useSelector } from 'react-redux';
 import { useSubscription } from 'react-stomp-hooks';
+import { BACKEND_URL1, BACKEND_URL2 } from '../../config/backend';
+import { ClipLoader } from 'react-spinners';
 
 function Holding() {
     const [holdings, setHoldings] = useState([]);
@@ -17,7 +19,7 @@ function Holding() {
     const fetchHoldings = async () => {
         try {
             const response = await axios.get(
-                `https://b90b-125-18-187-66.ngrok-free.app/holdings/` + userId,
+                `${BACKEND_URL2}/holdings/` + userId,
                 {
                     headers: {
                         "ngrok-skip-browser-warning": "true",
@@ -51,8 +53,8 @@ function Holding() {
           (share) => share.stockId === stock.stockId
         );
         return {
-          ...stock,
           current: matchingShare ? matchingShare.currentPrice : "...",
+          ...stock,
         };
       });
 
@@ -96,7 +98,7 @@ function Holding() {
 
             await axios
                 .post(
-                    `https://b90b-125-18-187-66.ngrok-free.app/holdings/sell`,
+                    `${BACKEND_URL2}/holdings/sell/` + id,
                     payload,
                     {
                         headers: {
@@ -120,7 +122,7 @@ function Holding() {
                         );
                         await axios
               .put(
-                `https://9a24-14-142-39-150.ngrok-free.app/api/shares/sell`,
+                `${BACKEND_URL1}/api/shares/sell`,
                 payload2,
                 {
                   headers: {
@@ -147,7 +149,8 @@ function Holding() {
                 })
                 .catch((err) => {
                     console.log(err);
-                    setMsg("Failed to sell stock");
+                    setMsg("Not enough shares to sell");
+                    closeModal();
                 });
         } catch (error) {
             console.error("Error selling stock:", error);
@@ -159,60 +162,64 @@ function Holding() {
             <UserNavigation />
             <div className="main">
                 <h2>Holdings</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Stock</th>
-                            <th>Quantity</th>
-                            <th>Entry Price (₹)</th>
-                            <th>Total Value (₹)</th>
-                            <th>Listed Price</th>
-                            <th>Profit/Loss</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {mergedData.map((stock) => (
-                            <tr key={stock.stockId} onClick={() => openModal(stock)}>
-                                <td>{stock.stockName}</td>
-                                <td>{stock.quantity}</td>
-                                <td>{stock.currentPrice.toFixed(2)}</td>
-                                <td>{(stock.quantity * stock.currentPrice).toFixed(2)}</td>
-                                <td>{typeof stock.current === 'number' ? stock.current.toFixed(2) : "..."}</td>
-                                <td style={{
-                                        color: typeof stock.current === 'number' && stock.current - stock.currentPrice > 0 ? 'green' : 'red',
-                                    }}>
-                                        ₹{typeof stock.current === 'number' ? (stock.current - stock.currentPrice).toFixed(2) : "..."}
-                                    </td>
-                            </tr>
-                        ))}
-                        <tr>
-                            <td colSpan="3"><strong>Total Investment:</strong></td>
-                            <td><strong>₹{totalInvestment.toFixed(2)}</strong></td>
-                            <td><strong>₹{currentInvestment.toFixed(2)}</strong></td>
-                            <td>
-                            <strong
-                                    style={{
-                                        color: totalInvestment - currentInvestment < 0 ? 'green' : 'red',
-                                    }}
-                                >
-                                    ₹{(currentInvestment - totalInvestment).toFixed(2)}
-                                </strong>
-                                </td>
-                            {/* <td><strong>₹ {(totalInvestment.toFixed(2) - currentInvestment.toFixed(2)).toFixed(2)}</strong></td> */}
-                        </tr>
-
-                    </tbody>
-                </table>
-            <h1 className="success">{msg}</h1>
+                {allShares.length > 0 ? (
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Stock</th>
+                                    <th>Quantity</th>
+                                    <th>Entry Price (₹)</th>
+                                    <th>Total Value (₹)</th>
+                                    <th>Listed Price</th>
+                                    <th>Profit/Loss 
+                                       <br></br> (Per Share)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {mergedData.map((stock) => (
+                                    <tr key={stock.portfolioId} onClick={() => openModal(stock)}>
+                                        <td>{stock.stockName}</td>
+                                        <td>{stock.quantity}</td>
+                                        <td>{stock.currentPrice.toFixed(2)}</td>
+                                        <td>{(stock.quantity * stock.currentPrice).toFixed(2)}</td>
+                                        <td>{typeof stock.current === 'number' ? stock.current.toFixed(2) : "..."}</td>
+                                        <td style={{
+                                                color: typeof stock.current === 'number' && stock.current - stock.currentPrice > 0 ? 'green' : 'red',
+                                            }}>
+                                                ₹{typeof stock.current === 'number' ? (stock.current - stock.currentPrice).toFixed(2) : "..."}
+                                            </td>
+                                    </tr>
+                                ))}
+                                <tr>
+                                    <td colSpan="3"><strong>Total Investment:</strong></td>
+                                    <td><strong>₹{totalInvestment.toFixed(2)}</strong></td>
+                                    <td><strong>₹{currentInvestment.toFixed(2)}</strong></td>
+                                    <td>
+                                    <strong
+                                            style={{
+                                                color: totalInvestment - currentInvestment < 0 ? 'green' : 'red',
+                                            }}
+                                        >
+                                            ₹{(currentInvestment - totalInvestment).toFixed(2)}
+                                        </strong>
+                                        </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                ) : (
+                    <table >
+                    <ClipLoader />
+                    </table>
+                )}
+                <h1 className="success">{msg}</h1>
             </div>
-
+    
             {/* Modal for Share Details */}
             {selectedShare && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <h3>{selectedShare.stockName}</h3>
-                        <p><strong>Available Shares:</strong> {selectedShare.quantity}</p>
-                        {/* <p><strong>Price per Share:</strong> ₹{selectedShare.price.toFixed(2)}</p> */}
+                        <p><strong>My Shares:</strong> {selectedShare.quantity}</p>
                         <div className="form-group">
                             <label htmlFor="quantity">Enter Quantity to Sell:</label>
                             <input
@@ -228,7 +235,7 @@ function Holding() {
                             className="sell-btn"
                             onClick={() =>
                                 sellStock(
-                                    selectedShare.stockId,
+                                    selectedShare.portfolioId,
                                     selectedShare.current,
                                     document.getElementById("quantity").value
                                 )
@@ -244,7 +251,7 @@ function Holding() {
                 </div>
             )}
         </div>
-    );
+    );    
 }
 
 export default Holding;

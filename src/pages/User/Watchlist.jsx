@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, CSSProperties } from "react";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useSubscription } from "react-stomp-hooks";
+import { BACKEND_URL2 } from "../../config/backend";
+import ClipLoader from "react-spinners/ClipLoader";
+
 
 function Watchlist() {
   const [watchlist, setWatchlist] = useState([]);
@@ -10,12 +13,15 @@ function Watchlist() {
   // const userId = useSelector((state) => state.user.id);
   const userId = 1;
 
+  // let [loading, setLoading] = useState(false);
+  let [color, setColor] = useState("#ffffff");
+
   // Fetch watchlist from the API
   useEffect(() => {
     const fetchWatchlist = async () => {
       try {
         const response = await axios.get(
-          `https://b90b-125-18-187-66.ngrok-free.app/watchlist/`+userId,
+          `${BACKEND_URL2}/watchlist/` + userId,
           {
             headers: {
               "ngrok-skip-browser-warning": "true",
@@ -30,7 +36,6 @@ function Watchlist() {
 
     fetchWatchlist();
   }, []);
-
 
   useSubscription("/topic/prices", (message) => {
     try {
@@ -64,16 +69,11 @@ function Watchlist() {
 
   const removeStock = async (id) => {
     try {
-      await axios.delete(
-        `https://b90b-125-18-187-66.ngrok-free.app/watchlist/remove/` +
-          userId +
-          "/3",
-        {
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
+      await axios.delete(`${BACKEND_URL2}/watchlist/remove/` + userId + "/3", {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
       setWatchlist(watchlist.filter((stock) => stock.id !== id));
       closeModal(); // Close modal after successful removal
       alert("Stock removed successfully!");
@@ -88,28 +88,35 @@ function Watchlist() {
       <UserNavigation />
       <div className="main">
         <h2>Watchlist</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Stock ID</th>
-              <th>Stock</th>
-              <th>Price (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mergedData.map((stock) => (
-              <tr key={stock.stockId} onClick={() => openModal(stock)}>
-                <td>{stock.stockId}</td>
-                <td>{stock.stockName}</td>
-                <td>
-                  {stock.currentPrice !== "N/A"
-                    ? stock.currentPrice.toFixed(2)
-                    : "N/A"}
-                </td>
+        {allShares.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Stock ID</th>
+                <th>Stock</th>
+                <th>Price (₹)</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {mergedData.map((stock) => (
+                <tr key={stock.stockId} onClick={() => openModal(stock)}>
+                  <td>{stock.stockId}</td>
+                  <td>{stock.stockName}</td>
+                  <td>
+                    {stock.currentPrice !== "N/A"
+                      ? stock.currentPrice.toFixed(2)
+                      : "N/A"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <table >
+          <ClipLoader />
+          </table>
+        )}
+        <br></br>
       </div>
 
       {/* Modal for Share Details */}

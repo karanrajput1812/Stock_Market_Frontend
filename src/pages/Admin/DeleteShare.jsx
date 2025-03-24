@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import './admin.css'
+import { BACKEND_URL1 } from "../../config/backend";
 
 function DeleteShares() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ function DeleteShares() {
     e.preventDefault();
     console.log(shareDetails);
     axios
-      .delete(`https://9a24-14-142-39-150.ngrok-free.app/api/shares/delete/`+ shareDetails.id,
+      .delete(`${BACKEND_URL1}/api/shares/delete/`+ shareDetails.id,
         {
                 headers: {
                         "ngrok-skip-browser-warning": "true"

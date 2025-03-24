@@ -5,6 +5,7 @@ import axios from "axios";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
 import { useSelector } from 'react-redux';
 import { useSubscription } from "react-stomp-hooks";
+import { BACKEND_URL1, BACKEND_URL2 } from "../../config/backend";
 function Trading() {
   const [allShares, setAllShares] = useState([]);
   const [filteredShares, setFilteredShares] = useState([]);
@@ -13,21 +14,6 @@ function Trading() {
   const [selectedShare, setSelectedShare] = useState(null);
   const userId = useSelector((state) => state.user.id);; // Example userId (replace with actual logic)
 
-  function getShares() {
-    axios
-      .get(`https://9a24-14-142-39-150.ngrok-free.app/api/shares/all`, {
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-        },
-      })
-      .then((res) => {
-        setAllShares(res.data);
-        setFilteredShares(res.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching mini statement:", err);
-      });
-  }
 
   useSubscription('/topic/prices', (message) => {
     try {
@@ -74,7 +60,7 @@ function Trading() {
 
       await axios
         .post(
-          `https://b90b-125-18-187-66.ngrok-free.app/holdings/buy`,
+          `${BACKEND_URL2}/holdings/buy`,
           payload2,
           {
             headers: {
@@ -84,12 +70,13 @@ function Trading() {
         )
         .then(async (res) => {
           console.log(res.data);
-          if (res.data === "Not enough Shares of Stock ID: " + id) {
-            setMsg("Not enough Shares of Stock ID: " + id);
+          if (res.data === "Insufficient balance") {
+            setMsg(res.data);
+            closeModal();
           } else {
             await axios
               .put(
-                `https://9a24-14-142-39-150.ngrok-free.app/api/shares/purchase`,
+                `${BACKEND_URL1}/api/shares/purchase`,
                 payload,
                 {
                   headers: {
@@ -108,7 +95,7 @@ function Trading() {
               })
               .catch((err) => {
                 console.log(err);
-                setMsg("Failed to Register User");
+                setMsg("Failed to Get ");
               });
           }
         })
@@ -130,7 +117,7 @@ function Trading() {
     };
     await axios
       .post(
-        `https://b90b-125-18-187-66.ngrok-free.app/watchlist/add`,
+        `${BACKEND_URL2}/watchlist/add`,
         payload,
         {
           headers: {
@@ -163,14 +150,6 @@ function Trading() {
     );
     setFilteredShares(filtered);
   };
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     getShares();
-  //   }, 2000);
-
-  //   return () => clearInterval(interval);
-  // }, []);
 
   return (
     <div className="container">

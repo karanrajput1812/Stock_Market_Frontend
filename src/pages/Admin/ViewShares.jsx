@@ -20,31 +20,6 @@ function ViewShares() {
     }
   });
 
-function getShares() {
-    axios.get(`https://9a24-14-142-39-150.ngrok-free.app/api/shares/all`,
-            {
-                    headers: {
-                            "ngrok-skip-browser-warning": "true"
-                    }
-            }
-        )
-        .then((res) => {
-                console.log(res.data);
-                setAllShares(res.data);
-        })
-        .catch((err) => {
-                console.error("Error fetching mini statement:", err);
-        });
-}
-
-// useEffect(() => {
-//     const interval = setInterval(() => {
-//         getShares();
-//     }, 1000); // 5 seconds
-
-//     return () => clearInterval(interval); // Cleanup interval on component unmount
-// }, []);
-
   return (
     <div className="container">
       <AdminNavigation />

@@ -3,6 +3,7 @@ import Navigation from "../../components/Navigation";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL3 } from "../../config/backend";
 // import { useDispatch, useSelector } from "react-redux";
 // import { login_User } from "../reduxContainer/AuthAction";
 
@@ -25,8 +26,8 @@ function ChangePassword() {
     console.log(user);
     e.preventDefault();
     axios
-        .put(
-          `https://b90b-125-18-187-66.ngrok-free.app/api/users/changepassword`,
+        .post(
+          `${BACKEND_URL3}/api/users/changePassword`,
           user,
           {
             headers: {
@@ -35,12 +36,12 @@ function ChangePassword() {
           }
         )
       .then((res) => {
-        console.log(res.data);
-        if (res.data !== "Password changed successfully") {
+        console.log(res);
+        if (res.data !== "Password changed successfully.") {
           setMsg("Incorrect Username Or Old Password");
         } else {
           // dispatch(login_User(res.data));
-          navigate("/user");
+          navigate("/login");
         }
       })
       .catch((err) => {

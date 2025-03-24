@@ -3,6 +3,7 @@ import Navigation from "../../components/Navigation";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL3 } from "../../config/backend";
 
 function Register() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ function Register() {
     // email: '',
     password: "",
     dob: "",
+    balance: 100000
   });
   const assignData = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -23,7 +25,7 @@ function Register() {
     console.log(user);
     axios
       .post(
-        `https://b90b-125-18-187-66.ngrok-free.app/api/users/register`,
+        `${BACKEND_URL3}/api/users/register`,
         user,
         {
           headers: {
