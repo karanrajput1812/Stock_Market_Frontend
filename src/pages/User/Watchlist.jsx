@@ -39,7 +39,11 @@ function Watchlist() {
 
   useSubscription("/topic/prices", (message) => {
     try {
-      const shares = JSON.parse(message.body);
+      const data = JSON.parse(message.body);
+      const shares = data.latestPrices;
+      const priceHistory = data.priceHistory;
+
+      setAllShares(shares);
       console.log(shares);
       setAllShares(shares);
     } catch (error) {

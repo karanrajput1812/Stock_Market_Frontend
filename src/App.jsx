@@ -26,7 +26,7 @@ import UserProfile from "./pages/User/UserProfile";
 import { StompSessionProvider } from "react-stomp-hooks";
 function App() {
   return (
-    <StompSessionProvider url="ws://27e0-125-18-187-66.ngrok-free.app/ws">
+    <StompSessionProvider url="ws://7ae6-125-18-187-66.ngrok-free.app/ws">
       <Provider store={store}>
       <Header />
       <Routes>
