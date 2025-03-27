@@ -49,15 +49,15 @@ function ForgotPassword() {
   };
 
   return (
-    <div class="container">
+    <div className="container">
       <Navigation />
-      <section class="main">
+      <section className="main">
         <h2>Forgot Password</h2>
-        <div class="contact-form">
+        <div className="contact-form">
           <form action="">
             <h3>Enter the below Detail to reset your password</h3>
-            <div class="form-group">
-              <label for="name">Username</label>
+            <div className="form-group">
+              <label htmlFor="name">Username</label>
               <input
                 type="text"
                 id="username"
@@ -69,7 +69,7 @@ function ForgotPassword() {
               />
             </div>
             <div className="form-group">
-              <label for="dob">Date Of Birth</label>
+              <label htmlFor="dob">Date Of Birth</label>
               <input
                 type="date"
                 id="dob"
@@ -82,9 +82,9 @@ function ForgotPassword() {
             </div>
 
               <div className="form-group">
-                <label for="password">{password}</label>
+                <label htmlFor="password">{password}</label>
               </div>
-            <button type="submit" class="submit-btn" onClick={loginUser}>
+            <button type="submit" className="submit-btn" onClick={loginUser}>
               Get Password
             </button>
             <br />

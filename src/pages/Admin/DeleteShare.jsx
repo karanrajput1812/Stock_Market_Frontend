@@ -44,12 +44,12 @@ function DeleteShares() {
     <div className="container">
        
       <AdminNavigation />
-      <div class="main">
+      <div className="main">
       <h2>Delete Shares</h2>
-        <div class="add-form">
+        <div className="add-form">
           <h3>Enter Share Details</h3>
           <form >
-            <div class="form-group">
+            <div className="form-group">
               <label htmlFor="id">Share Id</label>
               <input
                 type="text"
@@ -63,13 +63,13 @@ function DeleteShares() {
             </div>
             <button
               type="submit"
-              class="submit-btn"
+              className="submit-btn"
               onClick={deleteShare}
             >
               Delete Share
             </button>
           </form>
-          <div class="message" id="msg">{msg}</div>
+          <div className="message" id="msg">{msg}</div>
         </div>
       </div>
     </div>

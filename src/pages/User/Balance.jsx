@@ -5,12 +5,16 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { BACKEND_URL2 } from "../../config/backend";
+import { useAuth } from "../../security/AuthContext";
 function Balance() {
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   // const userId = useSelector((state) => state.user.id);
-  const userId = 1;
+  const authContext = useAuth();
+  
+  const userId = authContext.userId;
+  console.log(userId);
 
   // Fetch balance on component load
   useEffect(() => {
@@ -22,6 +26,7 @@ function Balance() {
       const response = await axios.get(`${BACKEND_URL2}/api/users/${userId}`, {
         headers: {
           "ngrok-skip-browser-warning": "true",
+          Authorization: authContext.token,
         },
       });
       console.log(response.data);

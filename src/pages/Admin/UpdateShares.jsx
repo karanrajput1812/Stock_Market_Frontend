@@ -48,12 +48,12 @@ function UpdateShares() {
     <div className="container">
        
       <AdminNavigation />
-      <div class="main">
+      <div className="main">
       <h2>Update Shares</h2>
-        <div class="add-form">
+        <div className="add-form">
           <h3>Enter Share Details</h3>
           <form >
-          <div class="form-group">
+          <div className="form-group">
               <label htmlFor="stockId">Share Id</label>
               <input
                 type="text"
@@ -65,7 +65,7 @@ function UpdateShares() {
                 required
               />
             </div>
-            <div class="form-group">
+            <div className="form-group">
               <label htmlFor="name">Share Name</label>
               <input
                 type="text"
@@ -80,7 +80,7 @@ function UpdateShares() {
                 Must start with capital letter and contain at least two words
               </small> */}
             </div>
-            <div class="form-group">
+            <div className="form-group">
               <label htmlFor="quantity">Quantity</label>
               <input
                 type="number"
@@ -92,7 +92,7 @@ function UpdateShares() {
                 required
               />
             </div>
-            <div class="form-group">
+            <div className="form-group">
               <label htmlFor="priceMin">Minimum Price</label>
               <input
                 type="number"
@@ -104,7 +104,7 @@ function UpdateShares() {
                 required
               />
             </div>
-            <div class="form-group">
+            <div className="form-group">
               <label htmlFor="priceMax">Maximum Price</label>
               <input
                 type="number"
@@ -119,13 +119,13 @@ function UpdateShares() {
             
             <button
               type="submit"
-              class="submit-btn"
+              className="submit-btn"
               onClick={addShare}
             >
               Add Share
             </button>
           </form>
-          <div class="message" id="msg">{msg}</div>
+          <div className="message" id="msg">{msg}</div>
         </div>
       </div>
     </div>

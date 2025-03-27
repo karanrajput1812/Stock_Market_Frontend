@@ -54,11 +54,11 @@ function Register() {
           <form action="">
             <h3>Register to Herodha</h3>
             {/* <div className="form-group">
-                    <label for="fname">Full Name</label>
+                    <label htmlFor="fname">Full Name</label>
                     <input type="text" id="fname" value={user.fname} onChange={assignData} name="fname" placeholder="Enter your full name" required />
                 </div> */}
             <div className="form-group">
-              <label for="username">Username</label>
+              <label htmlFor="username">Username</label>
               <input
                 type="text"
                 id="username"
@@ -70,11 +70,11 @@ function Register() {
               />
             </div>
             {/* <div className="form-group">
-                    <label for="email">Email Address</label>
+                    <label htmlFor="email">Email Address</label>
                     <input type="email" id="email" value={user.email} onChange={assignData} name="email" placeholder="Enter your email address" required />
                 </div> */}
             <div className="form-group">
-              <label for="dob">Date Of Birth</label>
+              <label htmlFor="dob">Date Of Birth</label>
               <input
                 type="date"
                 id="dob"
@@ -86,7 +86,7 @@ function Register() {
               />
             </div>
             <div className="form-group">
-              <label for="password">Password</label>
+              <label htmlFor="password">Password</label>
               <input
                 type="password"
                 id="password"
@@ -98,7 +98,7 @@ function Register() {
               />
             </div>
             {/* <div className="form-group">
-                    <label for="cpassword">Confirm Password</label>
+                    <label htmlFor="cpassword">Confirm Password</label>
                     <input type="password" id="cpassword" value={user.cpassword} onChange={assignData} name="cpassword" placeholder="Enter your confirm password" required />
                 </div> */}
             <button type="submit" className="submit-btn" onClick={registerUser}>

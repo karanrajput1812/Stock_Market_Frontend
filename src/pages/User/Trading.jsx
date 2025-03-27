@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
 import { useSelector } from "react-redux";
 import { useSubscription } from "react-stomp-hooks";
-import { BACKEND_URL1, BACKEND_URL2 } from "../../config/backend";
+import { BACKEND_URL1, BACKEND_URL2, BACKEND_URL3 } from "../../config/backend";
 import { MdOutlineZoomIn, MdOutlineZoomOut } from "react-icons/md";
-
 import ReactApexChart from "react-apexcharts";
-
+import { useAuth } from "../../security/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { Line } from "react-chartjs-2";
 import {
@@ -23,6 +22,7 @@ import {
   Legend,
   BarElement,
 } from "chart.js";
+import { AuthContext } from "../../security/AuthContext";
 
 ChartJS.register(
   CategoryScale,
@@ -36,6 +36,7 @@ ChartJS.register(
 );
 
 function Trading() {
+  const navigate = useNavigate();
   const [allShares, setAllShares] = useState([]);
   const [stockName, setStockName] = useState("");
   const [stockId, setStockId] = useState(0);
@@ -46,10 +47,13 @@ function Trading() {
   const [searchQuery, setSearchQuery] = useState("");
   const [msg, setMsg] = useState("");
   const [selectedShare, setSelectedShare] = useState(null);
-  const userId = useSelector((state) => state.user.id); // Example userId (replace with actual logic)
+  // const userId = useSelector((state) => state.user.id); // Example userId (replace with actual logic)
   const [handleZoomInOut, setHandleZoomInOut] = useState(true);
-
+  const authContext = useAuth();
+  const userId = authContext.userId;
   const [lineOptions ,setLineOptions] = useState({
+
+
     chart: {
       type: "area",
       stacked: false,
@@ -106,6 +110,10 @@ function Trading() {
     },
     xaxis: {
       type: "datetime",
+      labels: {
+        format: "HH:mm:ss",
+        datetimeUTC: false,
+      }
     },
     yaxis: {
       tooltip: {
@@ -150,25 +158,6 @@ function Trading() {
       ],
     },
   };
-
-  // const candleStickOption = {
-  //   chart: {
-  //     type: "candlestick",
-  //   },
-  //   title: {
-  //     text: "CandleStick Chart",
-  //     align: "left",
-  //   },
-  //   xaxis: {
-  //     type: "datetime",
-  //   },
-  //   yaxis: {
-  //     tooltip: {
-  //       enabled: true,
-  //     },
-  //   },
-  // };
-
 
   useSubscription("/topic/prices", (message) => {
     try {
@@ -233,9 +222,10 @@ function Trading() {
 
   const handleCandleGraph = (id) => {
     const selectedPriceHistory = allCandleStickHistory[id];
+    // console.log(selectedPriceHistory[0].timestamp) 
     if (selectedPriceHistory) {
       const transformedData = selectedPriceHistory.map((data) => ({
-        x: new Date(data.timestamp).toISOString(),
+        x: new Date(data.timestamp).getTime(),
         y: [data.openPrice, data.maxPrice, data.minPrice, data.closePrice],
       }));
 
@@ -261,7 +251,7 @@ function Trading() {
         purchaseQuantity: quantity,
       };
       const payload2 = {
-        userId: 1,
+        userId: userId,
         stockId: id,
         quantity: quantity,
         stockName: stockName,
@@ -273,6 +263,7 @@ function Trading() {
         .post(`${BACKEND_URL2}/holdings/buy`, payload2, {
           headers: {
             "ngrok-skip-browser-warning": "true",
+            Authorization: authContext.token, 
           },
         })
         .then(async (res) => {
@@ -309,7 +300,7 @@ function Trading() {
 
   const addToWatchList = async (id, name) => {
     const payload = {
-      userId: 1,
+      userId: userId,
       stockId: id,
       stockName: name,
     };
@@ -360,6 +351,31 @@ function Trading() {
     setFilteredShares(filtered);
   };
 
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await axios.get(
+          `${BACKEND_URL3}/api/users/getUserById/${authContext.username}`,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+              Authorization: authContext.token,
+            },
+          }
+        );
+        console.log(res.data);
+        authContext.settingUserId(res.data.userId); 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [authContext.username, authContext.token, navigate]);
+
+
+
   return (
     <div className="container">
       <UserNavigation />
@@ -369,7 +385,7 @@ function Trading() {
         <div className="contact-container">
           <div className="contact-card">
             <div className="form-group">
-              <label for="">Search by Stock ID or Name</label>
+              <label htmlFor="">Search by Stock ID or Name</label>
               <input
                 type="text"
                 placeholder="Search by Stock ID or Name"
@@ -454,11 +470,17 @@ function Trading() {
                         onChange={(e) => {
                           const graphType = e.target.value;
                           if (graphType === "line") {
-                            setChartData((prevData) => ({
+                            setCandleStickData((prevData) => ({
                               ...prevData,
-                              type: "line",
+                              type: "area",
                             }));
-                          } else if (graphType === "bar") {
+                          } else if (graphType === "candlestick") {
+                            setCandleStickData((prevData) => ({
+                              ...prevData,
+                              type: "candlestick",
+                            }));
+                          }
+                          else if (graphType === "bar") {
                             setChartData((prevData) => ({
                               ...prevData,
                               type: "bar",
@@ -474,7 +496,13 @@ function Trading() {
                     </div>
                     {document.getElementById("type")?.value ===
                     "line" ? (
-                      <Line data={chartData} options={chartOptions} />
+                      // <Line data={chartData} options={chartOptions} />
+                      <ReactApexChart
+                      series={[{ data: candleStickData.data }]}
+                      options={lineOptions}
+                      type="area"
+                      height={350}
+                    />
                     ) : document.getElementById("type")?.value === "bar" ? (
                       <Bar data={chartData} options={barGraphOptions} />
                     ) : (

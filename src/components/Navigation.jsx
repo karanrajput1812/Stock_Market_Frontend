@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 
 function Navigation() {
   return (
-    <aside class="aside">   
+    <aside className="aside">   
     <h3>Navigation</h3>
     <ul>
         <li><Link to="/">Home</Link></li>

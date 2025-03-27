@@ -5,13 +5,16 @@ import { useSelector } from "react-redux";
 import { useSubscription } from "react-stomp-hooks";
 import { BACKEND_URL2 } from "../../config/backend";
 import ClipLoader from "react-spinners/ClipLoader";
+import { useAuth } from "../../security/AuthContext";
 
 
 function Watchlist() {
   const [watchlist, setWatchlist] = useState([]);
   const [allShares, setAllShares] = useState([]);
   // const userId = useSelector((state) => state.user.id);
-  const userId = 1;
+  const authContext = useAuth();
+    
+  const userId = authContext.userId;
 
   // let [loading, setLoading] = useState(false);
   let [color, setColor] = useState("#ffffff");

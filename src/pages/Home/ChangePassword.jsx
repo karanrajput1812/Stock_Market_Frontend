@@ -51,15 +51,15 @@ function ChangePassword() {
   };
 
   return (
-    <div class="container">
+    <div className="container">
       <Navigation />
-      <section class="main">
+      <section className="main">
         <h2>Change Password</h2>
-        <div class="contact-form">
+        <div className="contact-form">
           <form action="">
             <h3>Enter the below Detail to change your password</h3>
-            <div class="form-group">
-              <label for="name">Username</label>
+            <div className="form-group">
+              <label htmlFor="name">Username</label>
               <input
                 type="text"
                 id="username"
@@ -71,7 +71,7 @@ function ChangePassword() {
               />
             </div>
             <div className="form-group">
-              <label for="oldPassword">Old Password</label>
+              <label htmlFor="oldPassword">Old Password</label>
               <input
                 type="password"
                 id="oldPassword"
@@ -83,7 +83,7 @@ function ChangePassword() {
               />
             </div>
             <div className="form-group">
-              <label for="newPassword">New Password</label>
+              <label htmlFor="newPassword">New Password</label>
               <input
                 type="password"
                 id="newPassword"
@@ -94,7 +94,7 @@ function ChangePassword() {
                 required
               />
             </div>
-            <button type="submit" class="submit-btn" onClick={loginUser}>
+            <button type="submit" className="submit-btn" onClick={loginUser}>
               Change Password
             </button>
             <br />

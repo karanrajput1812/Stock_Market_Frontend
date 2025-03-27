@@ -34,15 +34,15 @@ function AdminLogin() {
     }
 
   return (
-    <div class="container">
+    <div className="container">
       <Navigation />
-      <section class="main">
+      <section className="main">
         <h2>Admin Login</h2>
-        <div class="contact-form">
+        <div className="contact-form">
           <form action="">
             <h3>Login to Your Account</h3>
-            <div class="form-group">
-              <label for="name">Username</label>
+            <div className="form-group">
+              <label htmlFor="name">Username</label>
               <input
                 type="text"
                 id="username"
@@ -53,8 +53,8 @@ function AdminLogin() {
                 required
               />
             </div>
-            <div class="form-group">
-              <label for="name">Password</label>
+            <div className="form-group">
+              <label htmlFor="name">Password</label>
               <input
                 type="text"
                 id="password"
@@ -65,7 +65,7 @@ function AdminLogin() {
                 required
               />
             </div>
-            <button type="submit" class="submit-btn" onClick={loginUser}>
+            <button type="submit" className="submit-btn" onClick={loginUser}>
               Login
             </button>
             <br />

@@ -3,9 +3,9 @@ import "../pages.css";
 import Navigation from "../../components/Navigation";
 function AboutUs() {
   return (
-    <div class="container">
+    <div className="container">
       <Navigation />
-      <section class="main">
+      <section className="main">
         <h2>About Us</h2>
         <div>
           <p>

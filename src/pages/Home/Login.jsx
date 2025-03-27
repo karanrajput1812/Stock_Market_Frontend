@@ -6,58 +6,54 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login_User } from "../../reduxContainer/AuthAction";
 import { BACKEND_URL3 } from "../../config/backend";
-
+import { useAuth } from "../../security/AuthContext";
 
 function Login() {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const [msg, setMsg] = useState('');
-    const [user, setUser] = useState({
-        username: '',
-        password: ''
-    })
+  const authContext = useAuth();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [msg, setMsg] = useState("");
+  const [user, setUser] = useState({
+    username: "",
+    password: "",
+  });
 
-    const assignData = (e) => {
-        setUser({ ...user, [e.target.name]: e.target.value});
-    }
+  const assignData = (e) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
 
-    const loginUser = (e) => {
-        e.preventDefault();
-        axios
-        .post(
-          `${BACKEND_URL3}/api/users/login`,
-          user,
-          {
-            headers: {
-              "ngrok-skip-browser-warning": "true",
-            },
-          }
-        )
-            .then((res) => {
-                console.log(res.data);
-                if (res.data.success === false) {
-                    setMsg('Incorrect Username Or Password');
-                } else {
-                    dispatch(login_User(res.data));
-                    navigate('/user');
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                setMsg('Server Error');
-            });
+  const loginUser = async (e) => {
+    e.preventDefault();
+    console.log("dsdsds");
+    try {
+      const success = await authContext.login(user.username, user.password);
+      console.log(success);
+      if (success) {
+        try {
+          navigate("/user");
+          console.log("Login successful");
+        } catch (err) {
+          console.error(err);
+          setMsg("Server Error");
+        }
+      } else {
+        setMsg(true);
+      }
+    } catch (error) {
+      setMsg(true);
     }
+  };
 
   return (
-    <div class="container">
+    <div className="container">
       <Navigation />
-      <section class="main">
+      <section className="main">
         <h2>Login</h2>
-        <div class="contact-form">
+        <div className="contact-form">
           <form action="">
             <h3>Login to Your Account</h3>
-            <div class="form-group">
-              <label for="name">Username</label>
+            <div className="form-group">
+              <label htmlFor="name">Username</label>
               <input
                 type="text"
                 id="username"
@@ -68,8 +64,8 @@ function Login() {
                 required
               />
             </div>
-            <div class="form-group">
-              <label for="name">Password</label>
+            <div className="form-group">
+              <label htmlFor="name">Password</label>
               <input
                 type="text"
                 id="password"
@@ -80,7 +76,7 @@ function Login() {
                 required
               />
             </div>
-            <button type="submit" class="submit-btn" onClick={loginUser}>
+            <button type="submit" className="submit-btn" onClick={loginUser}>
               Login
             </button>
             <br />
@@ -88,8 +84,10 @@ function Login() {
             <p>
               Don't have an account? <Link to="/register">Register</Link>
             </p>
-            <p><Link to="/forgot-password">Forgot Password</Link></p>
-            <h1 className='error'>{msg}</h1>
+            <p>
+              <Link to="/forgot-password">Forgot Password</Link>
+            </p>
+            <h1 className="error">{msg}</h1>
           </form>
         </div>
       </section>

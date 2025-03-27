@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 function AdminNavigation() {
   return (
-    <aside class="aside">
+    <aside className="aside">
       <h3>Admin Section</h3>
       <ul>
         <li>

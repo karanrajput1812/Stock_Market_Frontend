@@ -6,9 +6,9 @@ import { useSelector } from "react-redux";
 function Home() {
   return (
     <div>
-      <div class="container">
+      <div className="container">
         <Navigation />
-        <main class="main">
+        <main className="main">
           <h2>Welcome to Herodha</h2>
           <p>
             Online Platform to invest in stocks, deliverables, mutual funds, ETF, bonds, and more.
@@ -21,7 +21,7 @@ function Home() {
           </p>
           <br></br>
           <br />
-          <Link to="/register" class="submit-btn">
+          <Link to="/register" className="submit-btn">
             Sign Up For Free
           </Link>
         </main>

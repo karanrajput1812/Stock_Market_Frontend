@@ -7,7 +7,9 @@ import { BACKEND_URL1, BACKEND_URL2 } from "../../config/backend";
 import { ClipLoader } from "react-spinners";
 import { Line } from "react-chartjs-2";
 import { MdOutlineZoomIn, MdOutlineZoomOut } from "react-icons/md";
-import {Bar} from 'react-chartjs-2'
+import { Bar } from "react-chartjs-2";
+import ReactApexChart from "react-apexcharts";
+import { useAuth } from "../../security/AuthContext";
 
 import {
   Chart as ChartJS,
@@ -35,19 +37,93 @@ ChartJS.register(
 function Holding() {
   const [holdings, setHoldings] = useState([]);
   const [stockName, setStockName] = useState("");
+  const [stockId, setStockId] = useState(0);
+
   const [currentPrice, setCurrentPrice] = useState();
   const [allPriceHistory, setAllPriceHistory] = useState([]);
+  const [allCandleStickHistory, setAllCandleStickHistory] = useState([]);
   const [allShares, setAllShares] = useState([]);
   const [selectedShare, setSelectedShare] = useState(null);
   const [msg, setMsg] = useState("");
   const [handleZoomInOut, setHandleZoomInOut] = useState(true);
 
   // const userId = useSelector((state) => state.user.id);
-  const userId = 1;
+  const authContext = useAuth();
+    
+  const userId = authContext.userId;
+
+  const [lineOptions, setLineOptions] = useState({
+    chart: {
+      type: "area",
+      stacked: false,
+      height: 350,
+      zoom: {
+        type: "x",
+        enabled: true,
+        autoScaleYaxis: true,
+      },
+      toolbar: {
+        autoSelected: "zoom",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    markers: {
+      size: 0,
+    },
+    title: {
+      text: "Stock Price Movement",
+      align: "left",
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        inverseColors: false,
+        opacityFrom: 0.5,
+        opacityTo: 0,
+        stops: [0, 90, 100],
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Price",
+      },
+    },
+    xaxis: {
+      type: "datetime",
+    },
+    tooltip: {
+      shared: false,
+    },
+  });
+
+  const [candleStickOption, setCandleStickOption] = useState({
+    chart: {
+      type: "candlestick",
+    },
+    title: {
+      text: "CandleStick Chart",
+      align: "left",
+    },
+    xaxis: {
+      type: "datetime",
+    },
+    yaxis: {
+      tooltip: {
+        enabled: true,
+      },
+    },
+  });
 
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [],
+  });
+
+  const [candleStickData, setCandleStickData] = useState({
+    series: [],
   });
 
   const chartOptions = {
@@ -66,17 +142,18 @@ function Holding() {
   };
 
   const barGraphOptions = {
-    responsive:true,
+    responsive: true,
     title: { text: "THICCNESS SCALE", display: true },
-    scales:{
-        yAxes:[ {
-            ticks:{
-                beginAtZero: false
-            }
-        }
-        ]
-    }
-}
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: false,
+          },
+        },
+      ],
+    },
+  };
 
   const fetchHoldings = async () => {
     try {
@@ -112,6 +189,15 @@ function Holding() {
     }
   });
 
+  useSubscription("/topic/intraday", (message) => {
+    try {
+      const data = JSON.parse(message.body);
+      setAllCandleStickHistory(data);
+    } catch (error) {
+      console.error("Error parsing message body:", error);
+    }
+  });
+
   const mergedData = holdings.map((stock) => {
     const matchingShare = allShares.find(
       (share) => share.stockId === stock.stockId
@@ -135,10 +221,11 @@ function Holding() {
 
   // Open Modal with Selected Share Details
   const openModal = (share) => {
-    setStockName(share.stockName);
+    setStockName(share.name);
+    setStockId(share.stockId);
     setSelectedShare(share);
-    setCurrentPrice(share.currentPrice.toFixed(2));
-    handleGraph(share);
+    handleGraph(share.name);
+    handleCandleGraph(stockId);
   };
 
   const handleGraph = (name) => {
@@ -171,6 +258,20 @@ function Holding() {
     }
   };
 
+  const handleCandleGraph = (id) => {
+    const selectedPriceHistory = allCandleStickHistory[id];
+    if (selectedPriceHistory) {
+      const transformedData = selectedPriceHistory.map((data) => ({
+        x: new Date(data.timestamp).toISOString(),
+        y: [data.openPrice, data.maxPrice, data.minPrice, data.closePrice],
+      }));
+
+      setCandleStickData({
+        data: transformedData,
+      });
+    }
+  };
+
   const zoomIn = () => {
     setHandleZoomInOut(false);
     setChartData((prevData) => {
@@ -190,6 +291,7 @@ function Holding() {
 
   useEffect(() => {
     handleGraph(stockName);
+    handleCandleGraph(stockId);
   }, [allPriceHistory, stockName]);
 
   const closeModal = () => setSelectedShare(null);
@@ -263,170 +365,171 @@ function Holding() {
     }
   };
 
-return (
+  return (
     <div className="container">
-        <UserNavigation />
-        <div className="main">
-            <h2>Holdings</h2>
-            <br></br>
-            {allShares.length > 0 ? (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Stock</th>
-                            <th>Quantity</th>
-                            <th>Entry Price (₹)</th>
-                            <th>Total Value (₹)</th>
-                            <th>Listed Price</th>
-                            <th>
-                                Profit/Loss
-                                <br></br> (Per Share)
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {mergedData.map((stock) => (
-                            <tr key={stock.portfolioId} onClick={() => openModal(stock)}>
-                                <td>{stock.stockName}</td>
-                                <td>{stock.quantity}</td>
-                                <td>{stock.currentPrice.toFixed(2)}</td>
-                                <td>{(stock.quantity * stock.currentPrice).toFixed(2)}</td>
-                                <td>
-                                    {typeof stock.current === "number"
-                                        ? stock.current.toFixed(2)
-                                        : "..."}
-                                </td>
-                                <td
-                                    style={{
-                                        color:
-                                            typeof stock.current === "number" &&
-                                            stock.current - stock.currentPrice > 0
-                                                ? "green"
-                                                : "red",
-                                    }}
-                                >
-                                    ₹
-                                    {typeof stock.current === "number"
-                                        ? (stock.current - stock.currentPrice).toFixed(2)
-                                        : "..."}
-                                </td>
-                            </tr>
-                        ))}
-                        <tr>
-                            <td colSpan="3">
-                                <strong>Total Investment:</strong>
-                            </td>
-                            <td>
-                                <strong>₹{totalInvestment.toFixed(2)}</strong>
-                            </td>
-                            <td>
-                                <strong>₹{currentInvestment.toFixed(2)}</strong>
-                            </td>
-                            <td>
-                                <strong
-                                    style={{
-                                        color:
-                                            totalInvestment - currentInvestment < 0
-                                                ? "green"
-                                                : "red",
-                                    }}
-                                >
-                                    ₹{(currentInvestment - totalInvestment).toFixed(2)}
-                                </strong>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            ) : (
-                <table>
-                    <ClipLoader />
-                </table>
-            )}
-            <h1 className="success">{msg}</h1>
-        </div>
-
-        {selectedShare && (
-            <div className="modal-overlay" onClick={closeModal}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                    <h3>{selectedShare.stockName}</h3>
-                    <p>
-                        <strong>My Shares:</strong> {selectedShare.quantity}
-                    </p>
-                    <p>
-                        <strong>Entry Price:</strong>{" "}
-                        {selectedShare.currentPrice.toFixed(2)}
-                    </p>
-                    <div className="graph-form-group">
-                        <label htmlFor="quantity">Enter Quantity to Sell: </label>
-                        <input
-                            type="number"
-                            id="quantity"
-                            name="quantity"
-                            min="1"
-                            max={selectedShare.quantity}
-                            placeholder="Enter quantity"
-                        />
-                        <br></br>
-                        <br></br>
-                        <label htmlFor="type">Select Graph Type: </label>
-                        <select
-                            id="type"
-                            name="type"
-                            required
-                            onChange={(e) => {
-                                const graphType = e.target.value;
-                                if (graphType === "line") {
-                                    setChartData((prevData) => ({
-                                        ...prevData,
-                                        type: "line",
-                                    }));
-                                } else if (graphType === "bar") {
-                                    setChartData((prevData) => ({
-                                        ...prevData,
-                                        type: "bar",
-                                    }));
-                                }
-                            }}
-                        >
-                            <option value="">Select a type</option>
-                            <option value="line">Line</option>
-                            <option value="bar">Bar</option>
-                            {/* <option value="candlestick">Candle</option> */}
-                        </select>
-                    </div>
-                    {document.getElementById("type")?.value === "bar" ? (
-                        <Bar data={chartData} options={barGraphOptions} />
-                    ) : (
-                        <Line data={chartData} options={chartOptions} />
-                    )}
-
-                    {handleZoomInOut ? (
-                        <MdOutlineZoomIn className="zoom" onClick={zoomIn} />
-                    ) : (
-                        <MdOutlineZoomOut onClick={zoomOut} className="zoom" />
-                    )}
-                    <br></br>
-
-                    <button
-                        className="sell-btn"
-                        onClick={() =>
-                            sellStock(
-                                selectedShare.portfolioId,
-                                selectedShare.current,
-                                document.getElementById("quantity").value
-                            )
-                        }
-                    >
-                        Sell Now
-                    </button>
-                    <button className="confirm-btn" onClick={closeModal}>
-                        Close
-                    </button>
-                </div>
-            </div>
+      <UserNavigation />
+      <div className="main">
+        <h2>Holdings</h2>
+        <br></br>
+        {allShares.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Stock</th>
+                <th>Quantity</th>
+                <th>Entry Price (₹)</th>
+                <th>Total Value (₹)</th>
+                <th>Listed Price</th>
+                <th>
+                  Profit/Loss
+                  <br></br> (Per Share)
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {mergedData.map((stock) => (
+                <tr key={stock.portfolioId} onClick={() => openModal(stock)}>
+                  <td>{stock.stockName}</td>
+                  <td>{stock.quantity}</td>
+                  <td>{stock.currentPrice.toFixed(2)}</td>
+                  <td>{(stock.quantity * stock.currentPrice).toFixed(2)}</td>
+                  <td>
+                    {typeof stock.current === "number"
+                      ? stock.current.toFixed(2)
+                      : "..."}
+                  </td>
+                  <td
+                    style={{
+                      color:
+                        typeof stock.current === "number" &&
+                        stock.current - stock.currentPrice > 0
+                          ? "green"
+                          : "red",
+                    }}
+                  >
+                    ₹
+                    {typeof stock.current === "number"
+                      ? (stock.current - stock.currentPrice).toFixed(2)
+                      : "..."}
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <td colSpan="3">
+                  <strong>Total Investment:</strong>
+                </td>
+                <td>
+                  <strong>₹{totalInvestment.toFixed(2)}</strong>
+                </td>
+                <td>
+                  <strong>₹{currentInvestment.toFixed(2)}</strong>
+                </td>
+                <td>
+                  <strong
+                    style={{
+                      color:
+                        totalInvestment - currentInvestment < 0
+                          ? "green"
+                          : "red",
+                    }}
+                  >
+                    ₹{(currentInvestment - totalInvestment).toFixed(2)}
+                  </strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        ) : (
+          <table>
+            <ClipLoader />
+          </table>
         )}
+        <h1 className="success">{msg}</h1>
+      </div>
+
+      {selectedShare && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>{selectedShare.stockName}</h3>
+            <p>
+              <strong>My Shares:</strong> {selectedShare.quantity}
+            </p>
+            <p>
+              <strong>Entry Price:</strong>{" "}
+              {selectedShare.currentPrice.toFixed(2)}
+            </p>
+            <div className="graph-form-group">
+              <label htmlFor="quantity">Enter Quantity to Sell: </label>
+              <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                min="1"
+                max={selectedShare.quantity}
+                placeholder="Enter quantity"
+              />
+              <br></br>
+              <br></br>
+              <label htmlFor="type">Select Graph Type: </label>
+              <select
+                id="type"
+                name="type"
+                required
+                onChange={(e) => {
+                  const graphType = e.target.value;
+                  if (graphType === "line") {
+                    setChartData((prevData) => ({
+                      ...prevData,
+                      type: "line",
+                    }));
+                  } else if (graphType === "bar") {
+                    setChartData((prevData) => ({
+                      ...prevData,
+                      type: "bar",
+                    }));
+                  }
+                }}
+              >
+                <option value="">Select a type</option>
+                <option value="candlestick">Candle</option>
+                <option value="line">Line</option>
+                <option value="bar">Bar</option>
+              </select>
+            </div>
+            {document.getElementById("type")?.value === "line" ? (
+              <Line data={chartData} options={chartOptions} />
+            ) : document.getElementById("type")?.value === "bar" ? (
+              <Bar data={chartData} options={barGraphOptions} />
+            ) : (
+              <ReactApexChart
+                series={[{ data: candleStickData.data }]}
+                options={candleStickOption}
+                type="candlestick"
+                height={350}
+              />
+            )}
+            <br></br>
+
+            <button
+              className="sell-btn"
+              onClick={() =>
+                sellStock(
+                  selectedShare.portfolioId,
+                  selectedShare.current,
+                  document.getElementById("quantity").value
+                )
+              }
+            >
+              Sell Now
+            </button>
+            <button className="confirm-btn" onClick={closeModal}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-);
+  );
 }
 
 export default Holding;

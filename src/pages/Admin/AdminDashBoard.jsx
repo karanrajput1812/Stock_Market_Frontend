@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom'
 function AdminDashBoard() {
   return (
     <div>
-      <div class="container">
+      <div className="container">
         <AdminNavigation />
-        <main class="main">
+        <main className="main">
           <h2>Welcome to Herodha</h2>
           <p>
             Online Platform to invest in stocks, deliverables, mutual funds, ETF, bonds, and more.
@@ -19,7 +19,7 @@ function AdminDashBoard() {
           </p>
           <br></br>
           <br />
-          <Link to="/net-banking" class="submit-btn">
+          <Link to="/net-banking" className="submit-btn">
             Sign Up For Free
           </Link>
         </main>
