@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
 import UserNavigation from "../../components/UserComponent/UserNavigation";
-import { Line } from "react-chartjs-2";
 import { useSelector } from "react-redux";
 import { useSubscription } from "react-stomp-hooks";
 import { BACKEND_URL1, BACKEND_URL2 } from "../../config/backend";
 import { MdOutlineZoomIn, MdOutlineZoomOut } from "react-icons/md";
 
-import {Bar} from 'react-chartjs-2'
+import ReactApexChart from "react-apexcharts";
 
+import { Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -37,17 +38,89 @@ ChartJS.register(
 function Trading() {
   const [allShares, setAllShares] = useState([]);
   const [stockName, setStockName] = useState("");
+  const [stockId, setStockId] = useState(0);
   const [allPriceHistory, setAllPriceHistory] = useState([]);
+  const [allCandleStickHistory, setAllCandleStickHistory] = useState([]);
+
   const [filteredShares, setFilteredShares] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [msg, setMsg] = useState("");
   const [selectedShare, setSelectedShare] = useState(null);
   const userId = useSelector((state) => state.user.id); // Example userId (replace with actual logic)
   const [handleZoomInOut, setHandleZoomInOut] = useState(true);
-  
+
+  const [lineOptions ,setLineOptions] = useState({
+    chart: {
+      type: "area",
+      stacked: false,
+      height: 350,
+      zoom: {
+        type: "x",
+        enabled: true,
+        autoScaleYaxis: true,
+      },
+      toolbar: {
+        autoSelected: "zoom",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    markers: {
+      size: 0,
+    },
+    title: {
+      text: "Stock Price Movement",
+      align: "left",
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        inverseColors: false,
+        opacityFrom: 0.5,
+        opacityTo: 0,
+        stops: [0, 90, 100],
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Price",
+      },
+    },
+    xaxis: {
+      type: "datetime",
+    },
+    tooltip: {
+      shared: false,
+    },
+  });
+
+  const [candleStickOption, setCandleStickOption] = useState({
+    chart: {
+      type: "candlestick",
+    },
+    title: {
+      text: "CandleStick Chart",
+      align: "left",
+    },
+    xaxis: {
+      type: "datetime",
+    },
+    yaxis: {
+      tooltip: {
+        enabled: true,
+      },
+    },
+  });
+
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [],
+  });
+
+  const [candleStickData, setCandleStickData] = useState({
+    series: [],
   });
 
   const chartOptions = {
@@ -61,33 +134,49 @@ function Trading() {
         display: true,
         position: "top",
       },
-    }
+    },
   };
 
   const barGraphOptions = {
-    responsive:true,
+    responsive: true,
     title: { text: "THICCNESS SCALE", display: true },
-    scales:{
-        yAxes:[ {
-            ticks:{
-                beginAtZero: false
-            }
-        }
-        ]
-    }
-}
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: false,
+          },
+        },
+      ],
+    },
+  };
+
+  // const candleStickOption = {
+  //   chart: {
+  //     type: "candlestick",
+  //   },
+  //   title: {
+  //     text: "CandleStick Chart",
+  //     align: "left",
+  //   },
+  //   xaxis: {
+  //     type: "datetime",
+  //   },
+  //   yaxis: {
+  //     tooltip: {
+  //       enabled: true,
+  //     },
+  //   },
+  // };
+
 
   useSubscription("/topic/prices", (message) => {
     try {
       const data = JSON.parse(message.body);
-      // console.log(data);
 
       const shares = data.latestPrices;
-      // console.log(shares);
 
       const priceHistory = data.priceHistory;
-      // console.log(priceHistory);
-
       setAllShares(shares);
       setAllPriceHistory(priceHistory);
       const filtered = shares.filter(
@@ -101,19 +190,31 @@ function Trading() {
     }
   });
 
+  useSubscription("/topic/intraday", (message) => {
+    try {
+      const data = JSON.parse(message.body);
+      setAllCandleStickHistory(data);
+    } catch (error) {
+      console.error("Error parsing message body:", error);
+    }
+  });
+
   const handleRowClick = (share) => {
     setStockName(share.name);
+    setStockId(share.stockId);
     setSelectedShare(share);
     handleGraph(share.name);
+    handleCandleGraph(stockId);
   };
 
   const handleGraph = (name) => {
     let selectedPriceHistory;
-    if(handleZoomInOut ? 
-      (selectedPriceHistory =  allPriceHistory[name])
-       : (selectedPriceHistory = allPriceHistory[name].slice(0, 30)));
+    if (
+      handleZoomInOut
+        ? (selectedPriceHistory = allPriceHistory[name])
+        : (selectedPriceHistory = allPriceHistory[name].slice(0, 30))
+    );
 
-    console.log(selectedPriceHistory);
     if (selectedPriceHistory) {
       setChartData({
         labels: selectedPriceHistory.map((data) => data.timestamp),
@@ -130,7 +231,22 @@ function Trading() {
     }
   };
 
+  const handleCandleGraph = (id) => {
+    const selectedPriceHistory = allCandleStickHistory[id];
+    if (selectedPriceHistory) {
+      const transformedData = selectedPriceHistory.map((data) => ({
+        x: new Date(data.timestamp).toISOString(),
+        y: [data.openPrice, data.maxPrice, data.minPrice, data.closePrice],
+      }));
+
+      setCandleStickData({
+        data: transformedData,
+      });
+    }
+  };
+
   useEffect(() => {
+    handleCandleGraph(stockId);
     handleGraph(stockName);
   }, [allPriceHistory, stockName]);
 
@@ -139,7 +255,6 @@ function Trading() {
   };
 
   const buyStock = async (id, price, quantity, stockName) => {
-    console.log(id, price, quantity, stockName);
     try {
       const payload = {
         stockId: id,
@@ -161,7 +276,6 @@ function Trading() {
           },
         })
         .then(async (res) => {
-          console.log(res.data);
           if (res.data === "Insufficient balance") {
             setMsg(res.data);
             closeModal();
@@ -173,7 +287,6 @@ function Trading() {
                 },
               })
               .then((res) => {
-                console.log(res.data);
                 if (res.data === "Not enough Shares of Stock ID: " + id) {
                   setMsg("Not enough Shares of Stock ID: " + id);
                 } else {
@@ -182,13 +295,11 @@ function Trading() {
                 closeModal();
               })
               .catch((err) => {
-                console.log(err);
-                setMsg("Failed to Get ");
+                setMsg("Failed to Get Stocks");
               });
           }
         })
         .catch((err) => {
-          console.log(err);
           setMsg("Failed to Register User");
         });
     } catch (error) {
@@ -197,7 +308,6 @@ function Trading() {
   };
 
   const addToWatchList = async (id, name) => {
-    console.log("dfdd");
     const payload = {
       userId: 1,
       stockId: id,
@@ -210,7 +320,6 @@ function Trading() {
         },
       })
       .then((res) => {
-        console.log(res.data);
         if (res.data === "Not enough Shares of Stock ID: 3") {
           setMsg("Not enough Shares of Stock ID: 3");
         } else {
@@ -219,7 +328,6 @@ function Trading() {
         closeModal();
       })
       .catch((err) => {
-        console.log(err);
         setMsg("Failed to Register User");
       });
   };
@@ -227,19 +335,19 @@ function Trading() {
   const zoomIn = () => {
     setHandleZoomInOut(false);
     setChartData((prevData) => {
-        const zoomedLabels = prevData.labels.slice(-30);
-        const zoomedData = prevData.datasets.map((dataset) => ({
-            ...dataset,
-            data: dataset.data.slice(-30),
-        }));
-        return { labels: zoomedLabels, datasets: zoomedData };
+      const zoomedLabels = prevData.labels.slice(-30);
+      const zoomedData = prevData.datasets.map((dataset) => ({
+        ...dataset,
+        data: dataset.data.slice(-30),
+      }));
+      return { labels: zoomedLabels, datasets: zoomedData };
     });
-};
+  };
 
-const zoomOut = () => {
+  const zoomOut = () => {
     setHandleZoomInOut(true);
     handleGraph(stockName);
-};
+  };
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
@@ -327,51 +435,59 @@ const zoomOut = () => {
                       <strong>₹{selectedShare.currentPrice.toFixed(2)}</strong>
                     </p>
                     <div className="graph-form-group">
-                        <label htmlFor="quantity">Enter Quantity to Sell: </label>
-                        <input
-                            type="number"
-                            id="quantity"
-                            name="quantity"
-                            min="1"
-                            max={selectedShare.quantity}
-                            placeholder="Enter quantity"
-                        />
-                        <br></br>
-                        <br></br>
-                        <label htmlFor="type">Select Graph Type: </label>
-                        <select
-                            id="type"
-                            name="type"
-                            required
-                            onChange={(e) => {
-                                const graphType = e.target.value;
-                                if (graphType === "line") {
-                                    setChartData((prevData) => ({
-                                        ...prevData,
-                                        type: "line",
-                                    }));
-                                } else if (graphType === "bar") {
-                                    setChartData((prevData) => ({
-                                        ...prevData,
-                                        type: "bar",
-                                    }));
-                                }
-                            }}
-                        >
-                            <option value="">Select a type</option>
-                            <option value="line">Line</option>
-                            <option value="bar">Bar</option>
-                            <option value="candlestick">Candle Stick</option>
-                        </select>
-                    </div>                    
-                    {document.getElementById("type")?.value === "bar" ? (
-                                            <Bar data={chartData} options={barGraphOptions} />
-                                        ) : (
-                                            <Line data={chartData} options={chartOptions} />
-                                        )}
-                    
-                    {handleZoomInOut ? (<MdOutlineZoomIn className="zoom" onClick={zoomIn} />) : (<MdOutlineZoomOut onClick={zoomOut} className="zoom" />)}
-                  
+                      <label htmlFor="quantity">Enter Quantity to Sell: </label>
+                      <input
+                        type="number"
+                        id="quantity"
+                        name="quantity"
+                        min="1"
+                        max={selectedShare.quantity}
+                        placeholder="Enter quantity"
+                      />
+                      <br></br>
+                      <br></br>
+                      <label htmlFor="type">Select Graph Type: </label>
+                      <select
+                        id="type"
+                        name="type"
+                        required
+                        onChange={(e) => {
+                          const graphType = e.target.value;
+                          if (graphType === "line") {
+                            setChartData((prevData) => ({
+                              ...prevData,
+                              type: "line",
+                            }));
+                          } else if (graphType === "bar") {
+                            setChartData((prevData) => ({
+                              ...prevData,
+                              type: "bar",
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">Select a type</option>
+                        <option value="candlestick">Candle Stick</option>
+                        <option value="line">Line</option>
+                        <option value="bar">Bar</option>
+                      </select>
+                    </div>
+                    {document.getElementById("type")?.value ===
+                    "line" ? (
+                      <Line data={chartData} options={chartOptions} />
+                    ) : document.getElementById("type")?.value === "bar" ? (
+                      <Bar data={chartData} options={barGraphOptions} />
+                    ) : (
+                      <ReactApexChart
+                      series={[{ data: candleStickData.data }]}
+                      options={candleStickOption}
+                      type="candlestick"
+                      height={350}
+                    />
+                    )}
+
+                    {/* {handleZoomInOut ? (<MdOutlineZoomIn className="zoom" onClick={zoomIn} />) : (<MdOutlineZoomOut onClick={zoomOut} className="zoom" />)} */}
+
                     <br></br>
                     <button
                       className="buy-btn"
